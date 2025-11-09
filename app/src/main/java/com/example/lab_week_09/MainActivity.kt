@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.lab_week_09
 
 import android.os.Bundle
@@ -16,10 +18,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
-import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
-import com.example.lab_week_09.ui.theme.OnBackgroundItemText
-import com.example.lab_week_09.ui.theme.PrimaryTextButton
+import com.example.lab_week_09.ui.theme.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,21 +36,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // ✅ Sekarang kita cukup panggil Home() saja
-                    Home()
+                    val navController = rememberNavController()
+                    App(navController = navController)
                 }
             }
         }
     }
 }
 
-// Data model
+// 🧩 Data Model
 data class Student(
     var name: String
 )
 
+// 🧭 Root Navigation
 @Composable
-fun Home() {
+fun App(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") {
+            Home { navController.navigate("resultContent/?listData=$it") }
+        }
+        composable(
+            "resultContent/?listData={listData}",
+            arguments = listOf(navArgument("listData") {
+                type = NavType.StringType
+            })
+        ) {
+            ResultContent(it.arguments?.getString("listData").orEmpty())
+        }
+    }
+}
+
+// 🏠 Home Page
+@Composable
+fun Home(
+    navigateFromHomeToResult: (String) -> Unit
+) {
     val listData = remember {
         mutableStateListOf(
             Student("Tanu"),
@@ -58,25 +88,30 @@ fun Home() {
     HomeContent(
         listData = listData,
         inputField = inputField,
-        onInputValueChange = { newValue -> inputField = inputField.copy(name = newValue) },
+        onInputValueChange = { input -> inputField = inputField.copy(name = input) },
         onButtonClick = {
             if (inputField.name.isNotBlank()) {
                 listData.add(inputField)
-                inputField = Student("") // reset field
+                inputField = Student("")
             }
+        },
+        navigateFromHomeToResult = {
+            // 🟢 Kirim listData dalam bentuk String seperti di contoh
+            navigateFromHomeToResult(listData.toList().toString())
         }
     )
 }
 
+// 📄 Home UI
 @Composable
 fun HomeContent(
     listData: SnapshotStateList<Student>,
     inputField: Student,
     onInputValueChange: (String) -> Unit,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+    navigateFromHomeToResult: () -> Unit
 ) {
     LazyColumn {
-        // Menampilkan input section
         item {
             Column(
                 modifier = Modifier
@@ -84,33 +119,27 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 🟦 Ganti Text lama dengan OnBackgroundTitleText
-                OnBackgroundTitleText(
-                    text = stringResource(id = R.string.enter_item)
-                )
+                OnBackgroundTitleText(text = stringResource(id = R.string.enter_item))
 
-                // 🟩 Input TextField untuk nama student
                 TextField(
                     value = inputField.name,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
                     ),
-                    onValueChange = {
-                        onInputValueChange(it)
-                    }
+                    onValueChange = { onInputValueChange(it) }
                 )
 
-                // 🟧 Ganti Button lama dengan PrimaryTextButton
-                PrimaryTextButton(
-                    text = stringResource(id = R.string.button_click)
-                ) {
-                    onButtonClick()
+                Row {
+                    PrimaryTextButton(text = stringResource(id = R.string.button_click)) {
+                        onButtonClick()
+                    }
+                    PrimaryTextButton(text = stringResource(id = R.string.button_navigate)) {
+                        navigateFromHomeToResult()
+                    }
                 }
             }
         }
 
-
-        // Menampilkan daftar student
         items(listData) { item ->
             Column(
                 modifier = Modifier
@@ -118,17 +147,31 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 🟨 Ganti Text lama dengan OnBackgroundItemText
                 OnBackgroundItemText(text = item.name)
             }
         }
     }
 }
 
+// 🧾 Result Page
+@Composable
+fun ResultContent(listData: String) {
+    Column(
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OnBackgroundItemText(text = listData)
+    }
+}
+
+// 🔍 Preview
 @Preview(showBackground = true)
 @Composable
-fun PreviewHome() {
+fun PreviewApp() {
     LAB_WEEK_09Theme {
-        Home()
+        val navController = rememberNavController()
+        App(navController)
     }
 }
