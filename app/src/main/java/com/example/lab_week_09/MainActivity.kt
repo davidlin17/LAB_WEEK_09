@@ -6,12 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,26 +24,55 @@ class MainActivity : ComponentActivity() {
         setContent {
             LAB_WEEK_09Theme {
                 Surface(
-                    // Membuat Surface memenuhi seluruh layar
                     modifier = Modifier.fillMaxSize(),
-                    // Mengatur warna latar belakang dari tema
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Deklarasi list data
-                    val list = listOf("Tanu", "Tina", "Tono")
-
-                    // Memanggil composable Home dan mengirimkan list
-                    Home(list)
+                    // ✅ Sekarang kita cukup panggil Home() saja
+                    Home()
                 }
             }
         }
     }
 }
 
+// Data model
+data class Student(
+    var name: String
+)
+
 @Composable
-fun Home(items: List<String>) {
+fun Home() {
+    val listData = remember {
+        mutableStateListOf(
+            Student("Tanu"),
+            Student("Tina"),
+            Student("Tono")
+        )
+    }
+
+    var inputField by remember { mutableStateOf(Student("")) }
+
+    HomeContent(
+        listData = listData,
+        inputField = inputField,
+        onInputValueChange = { newValue -> inputField = inputField.copy(name = newValue) },
+        onButtonClick = {
+            if (inputField.name.isNotBlank()) {
+                listData.add(inputField)
+                inputField = Student("") // reset field
+            }
+        }
+    )
+}
+
+@Composable
+fun HomeContent(
+    listData: SnapshotStateList<Student>,
+    inputField: Student,
+    onInputValueChange: (String) -> Unit,
+    onButtonClick: () -> Unit
+) {
     LazyColumn {
-        // Bagian input dan tombol
         item {
             Column(
                 modifier = Modifier
@@ -52,27 +82,28 @@ fun Home(items: List<String>) {
             ) {
                 Text(text = stringResource(id = R.string.enter_item))
                 TextField(
-                    value = "",
-                    onValueChange = { },
+                    value = inputField.name,
+                    onValueChange = { onInputValueChange(it) },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Text
                     )
                 )
-                Button(onClick = { }) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { onButtonClick() }) {
                     Text(text = stringResource(id = R.string.button_click))
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
 
-        // Bagian list (mirip RecyclerView)
-        items(items) { item ->
+        items(listData) { item ->
             Column(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = item)
+                Text(text = item.name)
             }
         }
     }
@@ -82,6 +113,6 @@ fun Home(items: List<String>) {
 @Composable
 fun PreviewHome() {
     LAB_WEEK_09Theme {
-        Home(listOf("Tanu", "Tina", "Tono"))
+        Home()
     }
 }
