@@ -17,6 +17,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
+import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
+import com.example.lab_week_09.ui.theme.OnBackgroundItemText
+import com.example.lab_week_09.ui.theme.PrimaryTextButton
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +76,7 @@ fun HomeContent(
     onButtonClick: () -> Unit
 ) {
     LazyColumn {
+        // Menampilkan input section
         item {
             Column(
                 modifier = Modifier
@@ -80,22 +84,33 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = stringResource(id = R.string.enter_item))
+                // 🟦 Ganti Text lama dengan OnBackgroundTitleText
+                OnBackgroundTitleText(
+                    text = stringResource(id = R.string.enter_item)
+                )
+
+                // 🟩 Input TextField untuk nama student
                 TextField(
                     value = inputField.name,
-                    onValueChange = { onInputValueChange(it) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
-                    )
+                    ),
+                    onValueChange = {
+                        onInputValueChange(it)
+                    }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { onButtonClick() }) {
-                    Text(text = stringResource(id = R.string.button_click))
+
+                // 🟧 Ganti Button lama dengan PrimaryTextButton
+                PrimaryTextButton(
+                    text = stringResource(id = R.string.button_click)
+                ) {
+                    onButtonClick()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
 
+
+        // Menampilkan daftar student
         items(listData) { item ->
             Column(
                 modifier = Modifier
@@ -103,7 +118,8 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = item.name)
+                // 🟨 Ganti Text lama dengan OnBackgroundItemText
+                OnBackgroundItemText(text = item.name)
             }
         }
     }
