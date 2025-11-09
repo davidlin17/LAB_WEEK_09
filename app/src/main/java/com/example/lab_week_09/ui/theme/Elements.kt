@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-// UI Element untuk menampilkan title
 @Composable
 fun OnBackgroundTitleText(text: String) {
     TitleText(text = text, color = MaterialTheme.colorScheme.onBackground)
@@ -22,7 +21,6 @@ fun TitleText(text: String, color: Color) {
     )
 }
 
-// UI Element untuk menampilkan item list
 @Composable
 fun OnBackgroundItemText(text: String) {
     ItemText(text = text, color = MaterialTheme.colorScheme.onBackground)
@@ -37,7 +35,6 @@ fun ItemText(text: String, color: Color) {
     )
 }
 
-// UI Element untuk button utama
 @Composable
 fun PrimaryTextButton(text: String, onClick: () -> Unit) {
     TextButton(text = text, textColor = Color.White, onClick = onClick)
